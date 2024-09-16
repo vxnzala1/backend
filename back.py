@@ -1,11 +1,11 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from ultralytics import YOLO
 from PIL import Image
-
 import shutil
 import os
+import io
 
 app = FastAPI()
 
@@ -23,9 +23,14 @@ ruta_modelo = r'./best.pt'  # Reemplaza con la ruta a tu modelo entrenado
 ruta_carpeta_imagen = r'./uploads'  # Usa una ruta relativa para mantener la portabilidad
 ruta_carpeta_imagen_anotada = r'./results'  # Usa una ruta relativa para mantener la portabilidad
 
+# Asegurarse de que las carpetas existen
+os.makedirs(ruta_carpeta_imagen, exist_ok=True)
+os.makedirs(ruta_carpeta_imagen_anotada, exist_ok=True)
+
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
     try:
+        # Guardar la imagen cargada en la carpeta de uploads
         file_location = os.path.join(ruta_carpeta_imagen, file.filename)
         with open(file_location, 'wb') as f:
             shutil.copyfileobj(file.file, f)
@@ -43,8 +48,14 @@ async def upload(file: UploadFile = File(...)):
     # Realizar la predicción
     resultados = model.predict(ruta_imagen)
 
-    # Guardar la imagen anotada
-    resultados[0].save(filename=ruta_imagen_anotada)
+    # Guardar la imagen anotada temporalmente para devolverla al frontend
+    anotada_img = resultados[0].plot()  # Esto genera una imagen con las cajas de las predicciones
+    imagen_anotada_pil = Image.fromarray(anotada_img)
 
-    # Devolver la URL de la imagen procesada al frontend
-    return JSONResponse({"message": "Successfully uploaded", "processed_image_url": ruta_imagen_anotada})
+    # Convertir la imagen anotada en un buffer de memoria
+    buffer = io.BytesIO()
+    imagen_anotada_pil.save(buffer, format="JPEG")
+    buffer.seek(0)
+
+    # Devolver la imagen procesada como una respuesta de streaming
+    return StreamingResponse(buffer, media_type="image/jpeg")
