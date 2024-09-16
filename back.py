@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 # Definir las rutas como variables
-ruta_modelo = r'D:\Documentos\Estudios\UNIVERSIDAD\Otros\TFG\Anomaly_Detector\runs\detect\train7\weights\best.pt'  # Reemplaza con la ruta a tu modelo entrenado
+ruta_modelo = r'./best.pt'  # Reemplaza con la ruta a tu modelo entrenado
 ruta_carpeta_imagen = r'./uploads'  # Usa una ruta relativa para mantener la portabilidad
 ruta_carpeta_imagen_anotada = r'./results'  # Usa una ruta relativa para mantener la portabilidad
 
