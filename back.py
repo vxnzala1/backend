@@ -58,5 +58,5 @@ async def upload(file: UploadFile = File(...)):
     imagen_anotada_pil.save(ruta_imagen_anotada)
 
     # Devolver la URL de la imagen procesada al frontend
-    processed_image_url = f"https://backend-1-gaka.onrender.com/results/{file.filename}"
+    processed_image_url = f"https://backend-1-gaka.onrender.com:10000/results/{file.filename}"
     return JSONResponse({"processed_image_url": processed_image_url})
